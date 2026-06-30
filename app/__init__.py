@@ -1,10 +1,13 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+import jwt
+import datetime
 
 db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
+    app.config["SECRET_KEY"] = "super-secret-key"
 
     app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://flask_user:StrongPassword123@localhost/intern_flask_db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False

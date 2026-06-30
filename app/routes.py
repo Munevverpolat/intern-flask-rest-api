@@ -1,7 +1,15 @@
-from flask import Blueprint, jsonify, request
+from flask import (
+    Blueprint,
+    jsonify,
+    request,
+    current_app,
+    g
+)
 
-from app.models import User
+from datetime import datetime, timedelta
+
 from app import db
+from app.models import User, OnlineUser
 
 from werkzeug.security import (
     generate_password_hash,
@@ -9,7 +17,9 @@ from werkzeug.security import (
 )
 
 import re
+import jwt
 
+from functools import wraps
 
 main = Blueprint("main", __name__)
 
@@ -28,6 +38,40 @@ def is_valid_password(password):
 
     return re.match(pattern, password)
 
+def token_required(f):
+
+    @wraps(f)
+    def decorated(*args, **kwargs):
+
+        token = request.headers.get("Authorization")
+
+        if not token:
+
+            return jsonify({
+                "error": "Token missing"
+            }), 401
+
+        try:
+
+            token = token.split(" ")[1]
+
+            data = jwt.decode(
+                token,
+                current_app.config["SECRET_KEY"],
+                algorithms=["HS256"]
+            )
+
+            g.user = data
+
+        except:
+
+            return jsonify({
+                "error": "Invalid token"
+            }), 401
+
+        return f(*args, **kwargs)
+
+    return decorated
 
 @main.route("/health")
 def health():
@@ -97,7 +141,6 @@ def create_user():
     return jsonify({
         "message": "User created successfully"
     }), 201
-
 @main.route("/login", methods=["POST"])
 def login():
 
@@ -135,6 +178,142 @@ def login():
             "error": "Wrong password"
         }), 401
 
+    token = jwt.encode(
+        {
+            "user_id": user.id,
+            "email": user.email,
+            "exp": datetime.utcnow() +
+            timedelta(hours=1)
+        },
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256"
+    )
+    online_user = OnlineUser(
+        username=user.username,
+        ipaddress=request.remote_addr,
+        logindatetime=datetime.utcnow()
+    ) 
+
+    db.session.add(online_user)
+
+    db.session.commit()
+
     return jsonify({
-        "message": "Login successful"
+        "message": "Login successful",
+        "token": token
     }), 200
+
+@main.route("/profile", methods=["GET"])
+@token_required
+def profile():
+
+    user = User.query.get(
+        g.user["user_id"]
+    )
+
+    return jsonify({
+        "id": user.id,
+        "username": user.username,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+        "email": user.email
+    }), 200
+
+@main.route("/user/list", methods=["GET"])
+@token_required
+def user_list():
+
+    users = User.query.all()
+
+    return jsonify([
+    {
+        "id": user.id,
+        "username": user.username,
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+        "email": user.email
+    }
+    for user in users
+]), 200
+
+@main.route("/user/update/<int:id>", methods=["PUT"])
+@token_required
+def update_user(id):
+
+    data = request.get_json()
+
+    user = User.query.get(id)
+
+    if not user:
+
+        return jsonify({
+            "error": "User not found"
+        }), 404
+
+    user.firstname = data.get(
+        "firstname",
+        user.firstname
+    )
+
+    user.lastname = data.get(
+        "lastname",
+        user.lastname
+    )
+
+    user.email = data.get(
+        "email",
+        user.email
+    )
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "User updated successfully"
+    }), 200
+
+@main.route("/user/delete/<int:id>", methods=["DELETE"])
+@token_required
+def delete_user(id):
+
+    user = User.query.get(id)
+
+    if not user:
+
+        return jsonify({
+            "error": "User not found"
+        }), 404
+
+    db.session.delete(user)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "User deleted successfully"
+    }), 200
+
+@main.route("/logout", methods=["POST"])
+@token_required
+def logout():
+
+    return jsonify({
+        "message": "Logout successful"
+    }), 200
+
+@main.route("/onlineusers", methods=["GET"])
+@token_required
+def online_users():
+
+    online_users = OnlineUser.query.all()
+
+    result = []
+
+    for user in online_users:
+
+        result.append({
+            "id": user.id,
+            "username": user.username,
+            "ipaddress": user.ipaddress,
+            "logindatetime": user.logindatetime
+        })
+
+    return jsonify(result), 200
