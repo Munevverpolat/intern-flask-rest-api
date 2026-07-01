@@ -11,13 +11,10 @@ from datetime import datetime, timedelta
 from app import db
 from app.models import User, OnlineUser
 
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash
-)
-
 import re
 import jwt
+import hashlib
+import secrets
 
 from functools import wraps
 
@@ -37,6 +34,17 @@ def is_valid_password(password):
     r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
 
     return re.match(pattern, password)
+
+def hash_password(password, salt=None):
+
+    if not salt:
+        salt = os.urandom(16).hex()
+
+    hashed = hashlib.sha256(
+        (password + salt).encode()
+    ).hexdigest()
+
+    return hashed, salt
 
 def token_required(f):
 
@@ -125,6 +133,12 @@ def create_user():
             "error": "Email already exists"
         }), 409
 
+    salt = secrets.token_hex(16)
+
+    hashed_password = hashlib.sha256(
+        (data["password"] + salt).encode()
+    ).hexdigest()
+
     user = User(
         username=data["username"],
         firstname=data["firstname"],
@@ -132,11 +146,16 @@ def create_user():
         lastname=data["lastname"],
         birthdate=data.get("birthdate"),
         email=data["email"],
-        password=generate_password_hash(data["password"])
+        password=hashed_password,
+        salt=salt
     )
 
     db.session.add(user)
     db.session.commit()
+
+    current_app.logger.info( 
+        f"New user registered: {user.username}" 
+    )
 
     return jsonify({
         "message": "User created successfully"
@@ -169,10 +188,11 @@ def login():
             "error": "User not found"
         }), 404
 
-    if not check_password_hash(
-        user.password,
-        data["password"]
-    ):
+    hashed_input_password = hashlib.sha256(
+        (data["password"] + user.salt).encode()
+    ).hexdigest()
+
+    if hashed_input_password != user.password:
 
         return jsonify({
             "error": "Wrong password"
@@ -197,6 +217,10 @@ def login():
     db.session.add(online_user)
 
     db.session.commit()
+        
+    current_app.logger.info(
+    f"User logged in: {user.username}"
+    )
 
     return jsonify({
         "message": "Login successful",
@@ -287,6 +311,10 @@ def delete_user(id):
 
     db.session.commit()
 
+    current_app.logger.info( 
+        f"User deleted: {user.username}" 
+    )
+
     return jsonify({
         "message": "User deleted successfully"
     }), 200
@@ -294,6 +322,10 @@ def delete_user(id):
 @main.route("/logout", methods=["POST"])
 @token_required
 def logout():
+
+    current_app.logger.info(
+         f"User logged out: {g.user['email']}" 
+    )
 
     return jsonify({
         "message": "Logout successful"
