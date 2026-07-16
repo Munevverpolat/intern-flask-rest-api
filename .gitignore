@@ -3,5 +3,6 @@ __pycache__/
 *.pyc
 .env
 .vscode/
-logs/
-logs/*.log
+
+logs/*
+!logs/.gitkeep
