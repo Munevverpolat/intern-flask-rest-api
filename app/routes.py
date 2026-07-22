@@ -208,16 +208,24 @@ def login():
         current_app.config["SECRET_KEY"],
         algorithm="HS256"
     )
-    online_user = OnlineUser(
-        username=user.username,
-        ipaddress=request.remote_addr,
-        logindatetime=datetime.utcnow()
-    ) 
+    online_user = OnlineUser.query.filter_by(
+        username=user.username
+    ).first()
 
+    if online_user:
+        online_user.ipaddress = request.remote_addr
+        online_user.logindatetime = datetime.utcnow()
+    else:
+        online_user = OnlineUser(
+            username=user.username,
+            ipaddress=request.remote_addr,
+            logindatetime=datetime.utcnow()
+      )  
     db.session.add(online_user)
 
     db.session.commit()
-        
+
+
     current_app.logger.info(
     f"User logged in: {user.username}"
     )
@@ -322,9 +330,21 @@ def delete_user(id):
 @main.route("/logout", methods=["POST"])
 @token_required
 def logout():
+    user = User.query.get(g.user["user_id"])
+
+    if not user:
+        return jsonify({
+            "error": "User not found"
+        }), 404
+
+    OnlineUser.query.filter_by(
+        username=user.username
+    ).delete()
+
+    db.session.commit()
 
     current_app.logger.info(
-         f"User logged out: {g.user['email']}" 
+        f"User logged out: {user.email}"
     )
 
     return jsonify({

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit User | Intern Flask REST API
+{% endblock %}
+
+{% block page_title %}
+Edit User
+{% endblock %}
+
+{% block content %}
+
+<section
+    class="panel-card"
+    data-user-id="{{ user_id }}"
+    id="editUserPage"
+>
+
+    <div class="panel-header">
+
+        <div>
+            <p class="eyebrow">
+                PUT /user/update/{{ user_id }}
+            </p>
+
+            <h3>Edit User Information</h3>
+        </div>
+
+        <a
+            href="/users"
+            class="back-link"
+        >
+            Back to User List
+        </a>
+
+    </div>
+
+    <div
+        id="editUserAlert"
+        class="alert d-none"
+        role="alert"
+    ></div>
+
+    <form id="editUserForm">
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+
+                <label
+                    for="firstname"
+                    class="form-label"
+                >
+                    First Name
+                    <span class="required-mark">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="firstname"
+                    required
+                >
+
+            </div>
+
+            <div class="col-md-6">
+
+                <label
+                    for="lastname"
+                    class="form-label"
+                >
+                    Last Name
+                    <span class="required-mark">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    id="lastname"
+                    required
+                >
+
+            </div>
+
+            <div class="col-12">
+
+                <label
+                    for="email"
+                    class="form-label"
+                >
+                    Email
+                    <span class="required-mark">*</span>
+                </label>
+
+                <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    required
+                >
+
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                class="btn gradient-button"
+                id="updateUserButton"
+            >
+                Save Changes
+            </button>
+
+            <a
+                href="/users"
+                class="btn light-button"
+            >
+                Cancel
+            </a>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script
+    src="{{ url_for('static', filename='js/edit_user.js') }}"
+></script>
+{% endblock %}

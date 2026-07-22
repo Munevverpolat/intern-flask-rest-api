@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+Online Users | Intern Flask REST API
+{% endblock %}
+
+{% block page_title %}
+Online Users
+{% endblock %}
+
+{% block content %}
+
+<section class="panel-card">
+
+    <div class="panel-header">
+
+        <div>
+            <p class="eyebrow">
+                GET /onlineusers
+            </p>
+
+            <h3>Active Sessions</h3>
+        </div>
+
+        <button
+            type="button"
+            class="btn light-button"
+            id="refreshOnlineUsers"
+        >
+            Refresh
+        </button>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table custom-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>IP Address</th>
+                    <th>Login Time</th>
+                </tr>
+            </thead>
+
+            <tbody id="onlineUsersTableBody">
+
+                <tr>
+                    <td
+                        colspan="4"
+                        class="text-center py-4"
+                    >
+                        Loading online users...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script
+    src="{{ url_for('static', filename='js/online_users.js') }}"
+></script>
+{% endblock %}

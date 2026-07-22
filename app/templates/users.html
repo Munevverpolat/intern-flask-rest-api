@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+Users | Intern Flask REST API
+{% endblock %}
+
+{% block page_title %}
+Users
+{% endblock %}
+
+{% block content %}
+
+<section class="panel-card">
+
+    <div class="panel-header">
+
+        <div>
+            <p class="eyebrow">
+                GET /user/list
+            </p>
+
+            <h3>Registered Users</h3>
+        </div>
+
+        <a
+            href="/users/create"
+            class="btn gradient-button"
+        >
+            + New User
+        </a>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table custom-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody id="userTableBody">
+
+                <tr>
+                    <td
+                        colspan="5"
+                        class="text-center py-4"
+                    >
+                        Loading users...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script
+    src="{{ url_for('static', filename='js/users.js') }}"
+></script>
+{% endblock %}

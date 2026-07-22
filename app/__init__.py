@@ -22,9 +22,15 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # REST API endpointleri
     from app.routes import main
 
     app.register_blueprint(main)
+
+    # Web UI sayfaları
+    from app.web_routes import web
+
+    app.register_blueprint(web)
 
     # =========================
     # LOGGING SETUP
@@ -36,7 +42,6 @@ def create_app():
 
     logs_directory = os.path.join(project_root, "logs")
 
-    # logs klasörü yoksa otomatik oluşturur.
     os.makedirs(logs_directory, exist_ok=True)
 
     log_file = os.path.join(logs_directory, "app.log")
@@ -58,7 +63,6 @@ def create_app():
 
     app.logger.setLevel(logging.INFO)
 
-    # Debug yeniden başlatmalarında aynı handler'ın tekrar eklenmesini önler.
     if not any(
         isinstance(handler, RotatingFileHandler)
         for handler in app.logger.handlers

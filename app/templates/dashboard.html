@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard | Intern Flask REST API
+{% endblock %}
+
+{% block page_title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-grid">
+
+    <article class="stat-card stat-card-pink">
+
+        <span class="stat-label">
+            Total Users
+        </span>
+
+        <strong id="totalUsers">
+            -
+        </strong>
+
+        <p>
+            Registered user accounts
+        </p>
+
+    </article>
+
+    <article class="stat-card stat-card-blue">
+
+        <span class="stat-label">
+            Online Users
+        </span>
+
+        <strong id="onlineUsers">
+            -
+        </strong>
+
+        <p>
+            Currently active sessions
+        </p>
+
+    </article>
+
+    <article class="stat-card stat-card-mint">
+
+        <span class="stat-label">
+            API Status
+        </span>
+
+        <strong id="apiStatus">
+            Checking...
+        </strong>
+
+        <p>
+            Application health status
+        </p>
+
+    </article>
+
+</div>
+
+<section class="panel-card mt-4">
+
+    <div class="panel-header">
+
+        <div>
+            <p class="eyebrow">
+                Quick Actions
+            </p>
+
+            <h3>Application Actions</h3>
+        </div>
+
+    </div>
+
+    <div class="quick-actions-grid">
+
+        <a
+            href="/users"
+            class="quick-action-card"
+        >
+
+            <span class="quick-action-icon quick-action-pink">
+                U
+            </span>
+
+            <div>
+                <strong>View Users</strong>
+
+                <p>
+                    List, edit, or delete registered users.
+                </p>
+            </div>
+
+        </a>
+
+        <a
+            href="/users/create"
+            class="quick-action-card"
+        >
+
+            <span class="quick-action-icon quick-action-blue">
+                +
+            </span>
+
+            <div>
+                <strong>Create User</strong>
+
+                <p>
+                    Create a new user account.
+                </p>
+            </div>
+
+        </a>
+
+        <a
+            href="/online-users"
+            class="quick-action-card"
+        >
+
+            <span class="quick-action-icon quick-action-mint">
+                O
+            </span>
+
+            <div>
+                <strong>Online Users</strong>
+
+                <p>
+                    Review currently active sessions.
+                </p>
+            </div>
+
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script
+    src="{{ url_for('static', filename='js/dashboard.js') }}"
+></script>
+{% endblock %}
